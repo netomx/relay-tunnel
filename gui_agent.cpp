@@ -67,6 +67,24 @@ void arrancar_vnc_silencioso() {
     }
 }
 
+void matar_vnc_silencioso() {
+    STARTUPINFOA si;
+    PROCESS_INFORMATION pi;
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
+    si.dwFlags = STARTF_USESHOWWINDOW; 
+    si.wShowWindow = SW_HIDE; 
+    ZeroMemory(&pi, sizeof(pi));
+
+    // Ejecutamos la herramienta nativa taskkill sin generar ventana
+    char cmd[] = "taskkill.exe /F /IM tvnserver.exe"; 
+    
+    if (CreateProcessA(NULL, cmd, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi)) {
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+    }
+}
+
 void proxy_data(SOCKET source_fd, SOCKET target_fd, string label, bool is_viewer) {
     if (source_fd == INVALID_SOCKET || target_fd == INVALID_SOCKET) return;
 
@@ -117,7 +135,7 @@ void run_viewer_mode(string target_id) {
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) return;
 
-    string server_host = "IP_OR_DNS_HERE";
+    string server_host = "us2.routervpn.us";
     int server_port = 9999;
     int local_port = 6000;
     
@@ -329,9 +347,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             return 0;
 
         case WM_DESTROY:
-            // Solo intentamos matar tvnserver si fuimos nosotros quienes lo arrancamos
             if (global_start_vnc) {
-                system("taskkill /F /IM tvnserver.exe >nul 2>&1");
+                matar_vnc_silencioso();
             }
             if (global_remote_socket != INVALID_SOCKET) closesocket(global_remote_socket);
             if (global_local_socket != INVALID_SOCKET) closesocket(global_local_socket);
