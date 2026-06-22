@@ -135,7 +135,7 @@ void run_viewer_mode(string target_id) {
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) return;
 
-    string server_host = "us2.routervpn.us";
+    string server_host = "YOUR_IP_OR_DNS";
     int server_port = 9999;
     int local_port = 6000;
     
